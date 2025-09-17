@@ -1,0 +1,373 @@
+/* globals.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Root color variables for consistent usage */
+:root {
+  --primary: #24a647;
+  --secondary: #0a51a3;
+  --accent: #7fffd4;
+  --neon: #00ffea;
+  --text: #ffffff;
+}
+
+/* Reset margin and set base styles */
+body {
+  margin: 0;
+  font-family: 'Inter', Arial, sans-serif;
+  color: var(--text);
+  background: #ffffff; /* clean background */
+}
+
+/* Link styling */
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+/* Neon text effect */
+.neon {
+  color: var(--neon);
+  text-shadow: 0 0 5px var(--neon), 0 0 10px var(--accent);
+}
+
+/* Modern animated button */
+.btn-modern {
+  background: var(--secondary);
+  color: white;
+  font-weight: 700;
+  padding: 0.95rem 2.2rem;
+  border-radius: 9px;
+  font-size: 1.16rem;
+  text-decoration: none;
+  border: none;
+  box-shadow: 0 4px 16px rgba(22, 115, 199, 0.33);
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  transition: color 0.3s ease;
+}
+
+.btn-modern::before {
+  content: "";
+  position: absolute;
+  top: -100%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--primary);
+  transition: top 0.3s ease;
+  z-index: 0;
+}
+
+.btn-modern:hover::before {
+  top: 0;
+}
+
+.btn-modern span {
+  position: relative;
+  z-index: 1;
+}
+
+/* Navbar base + sticky safety */
+.sps-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+}
+
+/* ensure dropdown portal menus show above canvas/3D elements */
+body > ul[role="menu"],
+body > div[role="menu"],
+body > nav > ul[role="menu"] {
+  z-index: 20000 !important;
+}
+
+/* scrollbar (top-of-page aesthetic) */
+:root {
+  --scroll-thumb: rgba(255,255,255,0.16);
+  --scroll-track: rgba(255,255,255,0.03);
+}
+*::-webkit-scrollbar { 
+  height: 10px; 
+  width: 10px; 
+}
+*::-webkit-scrollbar-track { 
+  background: transparent; 
+}
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--scroll-thumb), rgba(255,255,255,0.24));
+  border-radius: 999px;
+  border: 2px solid rgba(0,0,0,0);
+}
+*::-webkit-scrollbar-thumb:hover { 
+  transform: scale(1.02); 
+}
+
+/* mobile panel small tweak */
+.mobile-panel a { 
+  text-decoration: none; 
+}
+
+/* helpful: ensure no parent transform creates stacking context problem */
+.sps-navbar, .sps-navbar * { 
+  transform: none !important; 
+}
+
+/* ==== ENHANCED: Dynamic Animated Background Gradient ==== */
+
+/* Primary keyframe for the main gradient swap animation */
+@keyframes bgGradientSwap {
+  0% {
+    background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+  }
+  25% {
+    background: linear-gradient(135deg, #1a4a8a 10%, var(--primary) 90%);
+  }
+  50% {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  }
+  75% {
+    background: linear-gradient(135deg, var(--primary) 10%, #1a4a8a 90%);
+  }
+  100% {
+    background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+  }
+}
+
+/* Secondary animation for subtle color shifting within the gradient */
+@keyframes colorShift {
+  0%, 100% {
+    filter: hue-rotate(0deg) saturate(1);
+  }
+  33% {
+    filter: hue-rotate(5deg) saturate(1.1);
+  }
+  66% {
+    filter: hue-rotate(-5deg) saturate(0.95);
+  }
+}
+
+/* Tertiary animation for gradient position movement */
+@keyframes gradientMove {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 50% 0%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  75% {
+    background-position: 50% 100%;
+  }
+}
+
+/* Enhanced utility class with multiple layered animations */
+.animated-bg {
+  background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+  background-size: 200% 200%;
+  animation: 
+    bgGradientSwap 8s ease-in-out infinite,
+    colorShift 12s ease-in-out infinite,
+    gradientMove 15s ease-in-out infinite;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Additional variant for more dramatic effect */
+.animated-bg-dramatic {
+  background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 50%, var(--secondary) 100%);
+  background-size: 300% 300%;
+  animation: 
+    bgGradientSwap 6s ease-in-out infinite,
+    gradientMove 10s linear infinite,
+    colorShift 14s ease-in-out infinite;
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Subtle variant for less intensive animation */
+.animated-bg-subtle {
+  background: linear-gradient(135deg, var(--secondary) 20%, var(--primary) 80%);
+  background-size: 150% 150%;
+  animation: 
+    bgGradientSwap 12s ease-in-out infinite,
+    colorShift 20s ease-in-out infinite;
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Pulsing glow effect overlay (optional) */
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: inset 0 0 20px rgba(127, 255, 212, 0.1);
+  }
+  50% {
+    box-shadow: inset 0 0 40px rgba(127, 255, 212, 0.2);
+  }
+}
+
+.animated-bg-glow {
+  animation: 
+    bgGradientSwap 8s ease-in-out infinite,
+    glowPulse 4s ease-in-out infinite;
+}
+
+/* === ADDED STYLES === */
+
+/* Grid container for 2x2 cards */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  justify-content: center;
+  align-items: center;
+  max-width: 900px;
+  margin: 4rem auto;
+  padding: 2rem;
+}
+
+/* Individual card style */
+.card {
+  background: #ffffff;
+  color: #000000;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Form container below cards */
+.response-form {
+  max-width: 700px;
+  margin: 3rem auto;
+  padding: 2.5rem;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  color: #000000;
+}
+
+.response-form h2 {
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.response-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.response-form input,
+.response-form textarea {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.response-form textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.response-form button {
+  background: var(--primary);
+  color: white;
+  font-weight: 700;
+  padding: 0.9rem 2rem;
+  border: none;
+  border-radius: 9px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.response-form button:hover {
+  background: var(--secondary);
+}
+
+/* === Aesthetic Vertical Scrollbar === */
+html {
+  scrollbar-width: thin;              /* for Firefox */
+  scrollbar-color: var(--primary) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;                        /* vertical bar width */
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;            /* no ugly track */
+  margin: 4px 0;                      /* small breathing space top/bottom */
+}
+
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--secondary), var(--primary));
+  border-radius: 999px;
+  border: 2px solid transparent;      /* adds nice spacing */
+  background-clip: content-box;       /* makes it look inset */
+  transition: background 0.3s ease;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--primary), var(--secondary));
+}
+
+/* === Vertical Scrollbar (Green Gradient) === */
+html {
+  scrollbar-width: thin;              
+  scrollbar-color: var(--primary) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;   /* vertical */
+  height: 10px;  /* horizontal */
+}
+
+/* Vertical track/thumb */
+*::-webkit-scrollbar-track:vertical {
+  background: transparent;
+  margin: 4px 0;
+}
+
+*::-webkit-scrollbar-thumb:vertical {
+  background: linear-gradient(180deg, var(--secondary), var(--primary));
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  transition: background 0.3s ease;
+}
+*::-webkit-scrollbar-thumb:vertical:hover {
+  background: linear-gradient(180deg, var(--primary), var(--secondary));
+}
+
+/* Horizontal (blue) */
+*::-webkit-scrollbar-track:horizontal {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb:horizontal {
+  background: linear-gradient(90deg, #0a51a3, #1e90ff); /* deep → bright blue */
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  transition: background 0.3s ease;
+}
+*::-webkit-scrollbar-thumb:horizontal:hover {
+  background: linear-gradient(90deg, #1e90ff, #0a51a3);
+}
+
