@@ -1,46 +1,38 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
-import { Users, Calendar, BookOpen, FileText, Image, Mail, Home, Menu, X } from 'lucide-react';
+import { Menu, X, ChevronDown } from 'lucide-react';
 
 const dropdowns = [
   {
-    label: 'Members',
-    icon: <Users className="h-4 w-4" />,
+    label: 'EVENTS',
     items: [
-      { name: 'Current Members', path: '/members/current' },
-      { name: 'Past Members', path: '/members/past' },
+      { name: 'UPCOMING EVENTS', path: '/events/upcoming' },
+      { name: 'PAST EVENTS', path: '/events/past' },
     ],
   },
   {
-    label: 'Events',
-    icon: <Calendar className="h-4 w-4" />,
+    label: 'RESOURCES',
     items: [
-      { name: 'Upcoming Events', path: '/events/upcoming' },
-      { name: 'Past Events', path: '/events/past' },
-    ],
-  },
-  {
-    label: 'Resources',
-    icon: <BookOpen className="h-4 w-4" />,
-    items: [
-      { name: 'Funding', path: '/funding' },
-      { name: 'Mentoring', path: '/mentoring' },
+      { name: 'FUNDING', path: '/funding' },
+      { name: 'MENTORING', path: '/mentoring' },
     ],
   },
 ];
 
 const navLinks = [
-  { name: 'Home', path: '/', icon: <Home className="h-4 w-4" /> },
-  { name: 'Magazine', path: '/magazine', icon: <FileText className="h-4 w-4" /> },
-  { name: 'Gallery', path: '/gallery', icon: <Image className="h-4 w-4" /> },
-  { name: 'Contact', path: '/contact', icon: <Mail className="h-4 w-4" /> },
+  { name: 'HOME', path: '/'},
+  { name: 'TEAM', path: '/team'},
+  { name: 'MAGAZINE', path: '/magazine'},
+  { name: 'GALLERY', path: '/gallery'},
+  { name: 'CONTACT', path: '/contact'}
 ];
 
 export default function Navbar() {
+  const pathname = usePathname();
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  const [closingDropdown, setClosingDropdown] = useState<string | null>(null);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showHamburger, setShowHamburger] = useState(false);
@@ -49,7 +41,7 @@ export default function Navbar() {
   const navListRef = useRef<HTMLUListElement>(null);
   const logoRef = useRef<HTMLDivElement>(null);
 
-  // Check if navigation should switch to hamburger menu (with debounce)
+  // --- SMART RESIZE LOGIC ---
   useEffect(() => {
     let timeoutId: NodeJS.Timeout | null = null;
 
@@ -60,7 +52,6 @@ export default function Navbar() {
           const navWidth = navRef.current.clientWidth;
           const logoWidth = logoRef.current.clientWidth;
 
-          // Temporarily force display to measure actual width needed
           const wasHidden = navListRef.current.style.display === 'none';
           if (wasHidden) {
             navListRef.current.style.display = 'flex';
@@ -70,9 +61,8 @@ export default function Navbar() {
           }
 
           const navListWidth = navListRef.current.scrollWidth;
-          const padding = 100; // Account for padding, gaps, and some buffer
+          const padding = 150; 
 
-          // Reset styles if we changed them
           if (wasHidden) {
             navListRef.current.style.display = 'none';
             navListRef.current.style.visibility = '';
@@ -81,95 +71,48 @@ export default function Navbar() {
           }
 
           const shouldShowHamburger = logoWidth + navListWidth + padding > navWidth;
-
-          // Always set state — React will skip no-change renders internally
           setShowHamburger(shouldShowHamburger);
 
-          // Close mobile menu when switching back to desktop
           if (!shouldShowHamburger && isMobileMenuOpen) {
             setIsMobileMenuOpen(false);
             setOpenDropdown(null);
           }
         }
-      }, 150);
+      }, 100);
     };
 
-    // Initial check
     debouncedCheck();
+    const resizeObserver = new ResizeObserver(() => requestAnimationFrame(debouncedCheck));
+    
+    if (navRef.current) resizeObserver.observe(navRef.current);
+    if (navListRef.current) resizeObserver.observe(navListRef.current);
 
-    const resizeObserver = new ResizeObserver(() => {
-      requestAnimationFrame(debouncedCheck);
-    });
-
-    if (navRef.current) {
-      resizeObserver.observe(navRef.current);
-    }
-    if (navListRef.current) {
-      resizeObserver.observe(navListRef.current);
-    }
-
-    const handleResize = () => {
-      requestAnimationFrame(debouncedCheck);
-    };
-
-    const handleZoom = () => {
-      setTimeout(debouncedCheck, 200); // zoom can be delayed
-    };
-
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleResize);
-    window.addEventListener('wheel', handleZoom, { passive: true });
-    document.addEventListener('keydown', (e) => {
-      if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '0')) {
-        setTimeout(debouncedCheck, 200);
-      }
-    });
-
+    window.addEventListener('resize', debouncedCheck);
+    
     return () => {
       resizeObserver.disconnect();
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleResize);
-      window.removeEventListener('wheel', handleZoom);
+      window.removeEventListener('resize', debouncedCheck);
     };
   }, [isMobileMenuOpen]);
 
+  // Click Outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (navRef.current && !navRef.current.contains(e.target as Node)) {
-        closeDropdown(openDropdown);
+        setOpenDropdown(null);
         setIsMobileMenuOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [openDropdown]);
-
-  const openDropdownMenu = (label: string) => {
-    setClosingDropdown(null);
-    setOpenDropdown(label);
-  };
-
-  const closeDropdown = (label: string | null) => {
-    if (!label) return;
-    setClosingDropdown(label);
-    setTimeout(() => {
-      setClosingDropdown(null);
-      setOpenDropdown(null);
-    }, 300);
-  };
+  }, []);
 
   const toggleDropdown = (label: string) => {
-    if (openDropdown === label) {
-      closeDropdown(label);
-    } else {
-      openDropdownMenu(label);
-    }
+    setOpenDropdown(openDropdown === label ? null : label);
   };
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-    setOpenDropdown(null);
-  };
+  const isLinkActive = (path: string) => pathname === path;
+  const isDropdownActive = (items: { path: string }[]) => items.some(item => pathname === item.path);
 
   const renderNavItems = (isMobile = false) => (
     <>
@@ -180,20 +123,24 @@ export default function Navbar() {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.4rem',
-              color: hoveredItem === 'home' ? '#78BE20' : '#ffffff',
+              position: 'relative',
+              color: isLinkActive('/') || hoveredItem === 'home' ? '#78BE20' : '#ffffff',
               fontWeight: 600,
-              fontSize: isMobile ? '1.1rem' : 'clamp(1rem, 2vw, 1.15rem)',
+              fontSize: isMobile ? '1.1rem' : '0.9rem', 
+              letterSpacing: '0.5px',
               transition: 'color 0.3s ease',
               cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              padding: isMobile ? '0.75rem 0' : '0',
+              padding: isMobile ? '0.75rem 0' : '0.5rem 0',
+              whiteSpace: 'nowrap'
             }}
             onMouseEnter={() => setHoveredItem('home')}
             onMouseLeave={() => setHoveredItem(null)}
             onClick={() => isMobile && setIsMobileMenuOpen(false)}
           >
-            <Home className="h-4 w-4" /> Home
+            HOME
+            {!isMobile && (isLinkActive('/') || hoveredItem === 'home') && (
+               <span style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '2px', background: '#78BE20', borderRadius: '2px', boxShadow: '0 0 8px #78BE20' }} />
+            )}
           </span>
         </Link>
       </li>
@@ -201,105 +148,95 @@ export default function Navbar() {
       {/* Dropdowns */}
       {dropdowns.map((dropdown) => {
         const isOpen = openDropdown === dropdown.label;
-        const isClosing = closingDropdown === dropdown.label;
+        const isActive = isDropdownActive(dropdown.items);
+        
         return (
           <li key={dropdown.label} style={{ position: 'relative' }}>
             <button
-              aria-haspopup="menu"
-              aria-expanded={isOpen}
               onClick={() => toggleDropdown(dropdown.label)}
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.4rem',
+                gap: '0.2rem',
                 background: 'none',
                 border: 'none',
-                color: hoveredItem === dropdown.label || isOpen ? '#78BE20' : '#ffffff',
+                color: isActive || isOpen || hoveredItem === dropdown.label ? '#78BE20' : '#ffffff',
                 fontWeight: 600,
-                fontSize: isMobile ? '1.1rem' : 'clamp(1rem, 2vw, 1.15rem)',
+                fontSize: isMobile ? '1.1rem' : '0.9rem',
+                letterSpacing: '0.5px',
                 cursor: 'pointer',
-                padding: isMobile ? '0.75rem 0' : '0.5rem 0.75rem',
-                borderRadius: '6px',
+                padding: isMobile ? '0.75rem 0' : '0.5rem 0',
                 transition: 'all 0.3s ease',
-                whiteSpace: 'nowrap',
                 width: isMobile ? '100%' : 'auto',
-                justifyContent: isMobile ? 'flex-start' : 'center',
+                justifyContent: isMobile ? 'space-between' : 'center',
+                whiteSpace: 'nowrap'
               }}
               onMouseEnter={() => setHoveredItem(dropdown.label)}
               onMouseLeave={() => setHoveredItem(null)}
             >
-              {dropdown.icon}
               {dropdown.label}
-              <span
-                style={{
-                  marginLeft: '0.5rem',
-                  fontSize: '0.8rem',
-                  transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                  transition: 'transform 0.3s ease',
-                  display: 'inline-block',
-                }}
-              >
-                ▼
-              </span>
+              <ChevronDown 
+                size={14} 
+                style={{ 
+                  transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', 
+                  transition: 'transform 0.3s ease' 
+                }} 
+              />
             </button>
-            {(isOpen || isClosing) && (
+            
+            {/* Dropdown Menu */}
+            {isOpen && (
               <ul
-                role="menu"
                 style={{
                   listStyle: 'none',
                   position: isMobile ? 'static' : 'absolute',
-                  top: isMobile ? '0' : '100%',
-                  left: isMobile ? '0' : '-0.5rem',
-                  minWidth: isMobile ? '100%' : '200px',
-                  background: isMobile
-                    ? 'rgba(0,30,50,0.8)'
-                    : 'linear-gradient(145deg, rgba(0,40,70,0.98) 0%, rgba(0,30,50,0.98) 100%)',
-                  borderRadius: isMobile ? '8px' : '12px',
-                  boxShadow: isMobile
-                    ? '0 4px 20px rgba(0,0,0,0.2)'
-                    : '0 12px 40px rgba(0, 98, 155, 0.4), 0 8px 20px rgba(0,0,0,0.3)',
-                  padding: '0.75rem 0',
+                  top: isMobile ? '0' : '140%', 
+                  left: isMobile ? '0' : '-1rem',
+                  minWidth: '220px',
+                  background: 'rgba(10, 25, 40, 0.95)',
+                  border: '1px solid rgba(120, 190, 32, 0.3)',
+                  borderRadius: '8px',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                  padding: '0.5rem',
                   zIndex: 10000,
-                  border: '1px solid rgba(120,190,32,0.4)',
-                  backdropFilter: 'blur(15px)',
-                  animation: `${isClosing ? 'floatDown' : 'floatUp'} 0.3s ease-out`,
-                  marginTop: isMobile ? '0.5rem' : '0.5rem',
-                  marginLeft: isMobile ? '1rem' : '0',
+                  backdropFilter: 'blur(10px)',
+                  animation: 'fadeIn 0.2s ease-out',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '5px'
                 }}
               >
-                {dropdown.items.map((item) => (
-                  <li key={item.name}>
-                    <Link href={item.path}>
-                      <span
-                        style={{
-                          display: 'block',
-                          padding: '0.75rem 1.25rem',
-                          color: hoveredItem === `${dropdown.label}-${item.name}` ? '#78BE20' : '#ffffff',
-                          fontWeight: 500,
-                          fontSize: isMobile ? '1rem' : '1rem',
-                          cursor: 'pointer',
-                          transition: 'all 0.3s ease',
-                          borderRadius: '8px',
-                          margin: '0.25rem 0.5rem',
-                          background:
-                            hoveredItem === `${dropdown.label}-${item.name}` ? 'rgba(120,190,32,0.2)' : 'transparent',
-                          transform:
-                            hoveredItem === `${dropdown.label}-${item.name}` ? 'translateX(4px)' : 'translateX(0)',
-                          borderLeft:
-                            hoveredItem === `${dropdown.label}-${item.name}` ? '3px solid #78BE20' : '3px solid transparent',
-                        }}
-                        onMouseEnter={() => setHoveredItem(`${dropdown.label}-${item.name}`)}
-                        onMouseLeave={() => setHoveredItem(null)}
-                        onClick={() => {
-                          closeDropdown(dropdown.label);
-                          isMobile && setIsMobileMenuOpen(false);
-                        }}
-                      >
-                        {item.name}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
+                {dropdown.items.map((item) => {
+                  const isItemActive = pathname === item.path;
+                  return (
+                    <li key={item.name}>
+                      <Link href={item.path}>
+                        <span
+                          style={{
+                            display: 'block',
+                            padding: '0.6rem 1rem',
+                            fontSize: '0.85rem',
+                            fontWeight: 500,
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            background: isItemActive ? 'rgba(120, 190, 32, 0.15)' : 'transparent',
+                            color: isItemActive ? '#78BE20' : '#cccccc',
+                            borderLeft: isItemActive ? '3px solid #78BE20' : '3px solid transparent',
+                            whiteSpace: 'nowrap'
+                          }}
+                          className="dropdown-item"
+                          onClick={() => {
+                            setOpenDropdown(null);
+                            setIsMobileMenuOpen(false);
+                          }}
+                        >
+                          {item.name}
+                        </span>
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </li>
@@ -307,31 +244,38 @@ export default function Navbar() {
       })}
 
       {/* Other Nav Links */}
-      {navLinks.slice(1).map((link) => (
-        <li key={link.name}>
-          <Link href={link.path}>
-            <span
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                color: hoveredItem === link.name.toLowerCase() ? '#78BE20' : '#ffffff',
-                fontWeight: 600,
-                fontSize: isMobile ? '1.1rem' : 'clamp(1rem, 2vw, 1.15rem)',
-                transition: 'color 0.3s ease',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                padding: isMobile ? '0.75rem 0' : '0',
-              }}
-              onMouseEnter={() => setHoveredItem(link.name.toLowerCase())}
-              onMouseLeave={() => setHoveredItem(null)}
-              onClick={() => isMobile && setIsMobileMenuOpen(false)}
-            >
-              {link.icon} {link.name}
-            </span>
-          </Link>
-        </li>
-      ))}
+      {navLinks.slice(1).map((link) => {
+        const isActive = isLinkActive(link.path);
+        return (
+          <li key={link.name}>
+            <Link href={link.path}>
+              <span
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  position: 'relative',
+                  color: isActive || hoveredItem === link.name.toLowerCase() ? '#78BE20' : '#ffffff',
+                  fontWeight: 600,
+                  fontSize: isMobile ? '1.1rem' : '0.9rem',
+                  letterSpacing: '0.5px',
+                  transition: 'color 0.3s ease',
+                  cursor: 'pointer',
+                  padding: isMobile ? '0.75rem 0' : '0.5rem 0',
+                  whiteSpace: 'nowrap'
+                }}
+                onMouseEnter={() => setHoveredItem(link.name.toLowerCase())}
+                onMouseLeave={() => setHoveredItem(null)}
+                onClick={() => isMobile && setIsMobileMenuOpen(false)}
+              >
+                {link.name}
+                {!isMobile && (isActive || hoveredItem === link.name.toLowerCase()) && (
+                  <span style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '2px', background: '#78BE20', borderRadius: '2px', boxShadow: '0 0 8px #78BE20' }} />
+                )}
+              </span>
+            </Link>
+          </li>
+        )
+      })}
     </>
   );
 
@@ -340,9 +284,16 @@ export default function Navbar() {
       <nav
         ref={navRef}
         style={{
-          background: 'linear-gradient(135deg, rgba(0,98,155,0.95) 0%, rgba(0,70,110,0.9) 100%)',
-          borderBottom: '2px solid #78BE20',
-          padding: '0.5rem 1.5rem',
+          background: 'rgba(0, 30, 50, 0.6)', 
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          borderBottom: '1px solid rgba(120, 190, 32, 0.3)',
+          
+          // --- CHANGE 1: Reduced Vertical Padding here (was 0.8rem) ---
+          padding: '0.5rem 2rem', 
+          // ------------------------------------------------------------
+
+          boxSizing: 'border-box',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -352,39 +303,37 @@ export default function Navbar() {
           right: 0,
           width: '100%',
           zIndex: 9999,
-          fontFamily: 'Montserrat, Arial, sans-serif',
-          backdropFilter: 'blur(10px)',
-          boxShadow: '0 4px 20px rgba(0, 98, 155, 0.3)',
-          boxSizing: 'border-box',
-          minHeight: '80px',
+          boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
         }}
       >
         {/* LEFT: LOGO + TITLE */}
-        <div 
-          ref={logoRef}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}
-        >
+        <div ref={logoRef} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
           <Link href="/" passHref>
-            <img
-              src="/SSN_SPS_LOGO.jpg"
-              alt="SPS Logo"
-              style={{
-                width: '60px',
-                height: '60px',
-                objectFit: 'contain',
-                borderRadius: '50%',
-                backgroundColor: 'white',
-                padding: '4px',
-                cursor: 'pointer',
-              }}
-            />
+             <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+               <img
+                src="/SSN_SPS_LOGO.jpg"
+                alt="SPS Logo"
+                style={{
+                  // --- CHANGE 2: Reduced Logo Size here (was 60px) ---
+                  width: '40px',
+                  height: '40px',
+                  // ---------------------------------------------------
+                  objectFit: 'contain',
+                  borderRadius: '50%',
+                  backgroundColor: 'white',
+                  padding: '3px', // Slightly reduced padding inside circle
+                }}
+              />
+            </div>
           </Link>
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
               fontWeight: 'bold',
-              fontSize: 'clamp(1.2rem, 2.5vw, 1.8rem)',
+              // --- CHANGE 3: Adjusted Font Size clamp ---
+              fontSize: 'clamp(1rem, 2vw, 1.5rem)',
+              // ------------------------------------------
               lineHeight: 1,
             }}
           >
@@ -394,7 +343,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* DESKTOP NAV (always rendered for measurements) */}
+        {/* DESKTOP NAV */}
         <ul
           ref={navListRef}
           style={{
@@ -403,10 +352,8 @@ export default function Navbar() {
             alignItems: 'center',
             margin: 0,
             padding: 0,
-            gap: 'clamp(1rem, 3vw, 2rem)',
+            gap: 'clamp(1rem, 2vw, 2.5rem)', 
             marginLeft: 'auto',
-            justifyContent: 'flex-end',
-            flexWrap: 'nowrap',
           }}
         >
           {renderNavItems()}
@@ -414,32 +361,26 @@ export default function Navbar() {
 
         {/* HAMBURGER BUTTON */}
         {showHamburger && (
-          <div style={{ marginLeft: 'auto' }}>
-            <button
-              onClick={toggleMobileMenu}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#ffffff',
-                cursor: 'pointer',
-                padding: '0.5rem',
-                borderRadius: '6px',
-                transition: 'background-color 0.3s ease',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(120,190,32,0.2)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-              }}
-              aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
-            >
-              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-          </div>
+          <button
+            onClick={() => {
+              setIsMobileMenuOpen(!isMobileMenuOpen);
+              setOpenDropdown(null);
+            }}
+            style={{
+              background: 'transparent',
+              border: '1px solid rgba(255,255,255,0.2)',
+              color: '#ffffff',
+              cursor: 'pointer',
+              padding: '0.4rem', // Reduced button padding slightly
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginLeft: 'auto'
+            }}
+          >
+            {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
         )}
 
         {/* MOBILE MENU DROPDOWN */}
@@ -450,56 +391,31 @@ export default function Navbar() {
               top: '100%',
               left: 0,
               right: 0,
-              background: 'linear-gradient(145deg, rgba(0,40,70,0.98) 0%, rgba(0,30,50,0.98) 100%)',
+              background: 'rgba(5, 20, 35, 0.98)',
               backdropFilter: 'blur(15px)',
-              border: '1px solid rgba(120,190,32,0.4)',
-              borderTop: 'none',
-              boxShadow: '0 8px 32px rgba(0, 98, 155, 0.4)',
-              animation: 'floatUp 0.3s ease-out',
-              zIndex: 10000,
+              borderBottom: '1px solid rgba(120,190,32,0.4)',
+              animation: 'fadeIn 0.3s ease-out',
+              height: '100vh', 
+              zIndex: 9998,
             }}
           >
-            <ul
-              style={{
-                listStyle: 'none',
-                margin: 0,
-                padding: '1rem 1.5rem',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.5rem',
-              }}
-            >
+            <ul style={{ listStyle: 'none', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {renderNavItems(true)}
             </ul>
           </div>
         )}
       </nav>
 
-      {/* Spacer */}
-      <div style={{ height: '80px' }}></div>
-
-      {/* Animations */}
-      <style jsx>{`
-        @keyframes floatUp {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+      {/* Animation Styles */}
+      <style jsx global>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-
-        @keyframes floatDown {
-          from {
-            opacity: 1;
-            transform: translateY(0);
-          }
-          to {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
+        .dropdown-item:hover {
+          background-color: rgba(120, 190, 32, 0.2) !important;
+          color: #78BE20 !important;
+          transform: translateX(5px);
         }
       `}</style>
     </>

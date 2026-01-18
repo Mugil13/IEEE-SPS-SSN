@@ -15,44 +15,28 @@ export default function RootLayout({ children }: RootLayoutProps) {
           minHeight: '100vh',
           display: 'flex',
           flexDirection: 'column',
-          background: 'linear-gradient(135deg, #0a51a3 20%, #24a647 90%)',
+          background: 'linear-gradient(135deg, #0a51a3 20%, #24a647 90%)', // Your specific background
           color: 'white',
           fontFamily: "'Montserrat', sans-serif",
-          overflowX: 'hidden',
-          width: '100%',
-          boxSizing: 'border-box',
+          overflowX: 'hidden', // Prevents accidental horizontal scroll
         }}
       >
-        {/* Horizontal scrollbar container */}
-<div
-  style={{
-    overflowX: 'auto',
-    overflowY: 'hidden',
-    whiteSpace: 'nowrap',
-    width: '100%',
-    height: '12px', // forces space for the bar
-  }}
->
-  {/* Wide dummy content just to trigger scrollbar */}
-  <div style={{ width: '300vw', height: '1px' }}></div>
-</div>
-
-
         <Navbar />
+        
         <main
           style={{
-            flex: 1,
-            padding: '2rem 1rem',
-            maxWidth: '1200px',
-            margin: '0 auto',
+            flex: 1, // This pushes the Footer to the bottom
             width: '100%',
+            maxWidth: '1200px',
+            margin: '0 auto', // Centers the content
+            padding: '2rem 1rem',
             boxSizing: 'border-box',
             position: 'relative',
-            zIndex: 1,
           }}
         >
           {children}
         </main>
+
         <Footer />
       </body>
     </html>

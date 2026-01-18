@@ -1,316 +1,611 @@
 'use client';
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence, PanInfo } from 'framer-motion';
+import { X, ChevronLeft, ChevronRight, ZoomIn, Images } from 'lucide-react';
 
-const photos = [
-  { src: '/download-removebg-preview.png', alt: 'Event Photo 1', tag: 'talks', date: 'Aug 2023' },
-  { src: '/gallery/photo2.jpg', alt: 'Event Photo 2', tag: 'workshops', date: 'Jul 2023' },
-  { src: '/gallery/photo3.jpg', alt: 'Event Photo 3', tag: 'conferences', date: 'Jun 2023' },
-  { src: '/gallery/photo4.jpg', alt: 'Event Photo 4', tag: 'competitions', date: 'May 2023' },
-  { src: '/gallery/photo5.jpg', alt: 'Event Photo 5', tag: 'workshops', date: 'Apr 2023' },
-  { src: '/gallery/photo6.jpg', alt: 'Event Photo 6', tag: 'talks', date: 'Mar 2023' },
-  { src: '/gallery/photo7.jpg', alt: 'Event Photo 7', tag: 'competitions', date: 'Feb 2023' },
-  { src: '/gallery/photo8.jpg', alt: 'Event Photo 8', tag: 'conferences', date: 'Jan 2023' },
-  { src: '/gallery/photo9.jpg', alt: 'Event Photo 9', tag: 'workshops', date: 'Dec 2022' },
-  { src: '/gallery/photo10.jpg', alt: 'Event Photo 10', tag: 'talks', date: 'Nov 2022' },
+// --- TYPES ---
+interface GalleryItem {
+  id: number;
+  category: string;
+  title: string;
+  date: string;
+  cover: string;
+  images: string[];
+}
+
+// --- DATA STRUCTURE (Reordered via Logic below, but kept here for reference) ---
+const galleryItems: GalleryItem[] = [
+  { 
+    id: 10, 
+    category: 'Competitions', 
+    title: 'Circuit-O-Poly', 
+    date: 'Jan 2026', 
+    cover: '/events/event-16-2.jpg', 
+    images: ['/events/event-16-2.jpg', '/events/event-16-3.jpg', '/events/event-16-4.jpg', '/events/event-16-5.jpeg', '/events/event-16-6.jpeg', '/events/event-16-7.jpeg', '/events/event-16-8.jpeg', '/events/event-16-9.jpeg', '/events/event-16-10.jpeg'] 
+  },
+  { 
+    id: 9, 
+    category: 'Talks', 
+    title: 'Neuromuscular Pathways', 
+    date: 'Jan 2026', 
+    cover: '/events/event-15-2.jpg', 
+    images: ['/events/event-15-2.jpg', '/events/event-15-3.jpg', '/events/event-15-4.jpg', '/events/event-15-5.jpeg', '/events/event-15-6.jpeg'] 
+  },
+  { 
+    id: 8, 
+    category: 'Workshops', 
+    title: 'IEEE SPS Outreach Session', 
+    date: 'Oct 2025', 
+    cover: '/events/event-17-1.jpeg', 
+    images: ['/events/event-17-1.jpeg', '/events/event-17-2.jpeg', '/events/event-17-3.jpeg', '/events/event-17-4.jpeg', '/events/event-17-5.jpeg', '/events/event-17-6.jpeg', '/events/event-17-7.jpeg', '/events/event-17-8.jpeg'] 
+  },
+  { 
+    id: 7, 
+    category: 'Workshops', 
+    title: 'MathWorks Optimization Tools', 
+    date: 'Sep 2025', 
+    cover: '/events/event-14-2.jpeg', 
+    images: ['/events/event-14-2.jpeg', '/events/event-14-3.jpeg', '/events/event-14-4.jpeg', '/events/event-14-5.jpeg', '/events/event-14-6.jpeg', '/events/event-14-7.jpeg', '/events/event-14-8.jpeg', '/events/event-14-9.jpeg', '/events/event-14-10.jpeg', '/events/event-14-11.jpeg', '/events/event-14-12.jpeg'] 
+  },
+  { 
+    id: 6, 
+    category: 'Workshops', 
+    title: 'Student Outreach Program', 
+    date: 'Aug 2025', 
+    cover: '/events/event-13-1.jpeg', 
+    images: ['/events/event-13-1.jpeg', '/events/event-13-2.jpeg', '/events/event-13-3.jpeg', '/events/event-13-4.jpeg', '/events/event-13-5.jpeg', '/events/event-13-6.jpeg', '/events/event-13-7.jpeg', '/events/event-13-8.jpeg'] 
+  },
+  { 
+    id: 5, 
+    category: 'Talks', 
+    title: 'Computer Vision: Pixels to Insights', 
+    date: 'Aug 2025', 
+    cover: '/events/event-12-2.jpg', 
+    images: ['/events/event-12-2.jpg', '/events/event-12-3.jpeg', '/events/event-12-4.jpeg', '/events/event-12-5.jpeg', '/events/event-12-6.jpeg', '/events/event-12-7.jpg', '/events/event-12-8.jpeg', '/events/event-12-9.jpeg', '/events/event-12-10.jpg', '/events/event-12-11.jpg'] 
+  },
+  { 
+    id: 4, 
+    category: 'Talks', 
+    title: 'Signal Processing in Healthcare', 
+    date: 'Aug 2024', 
+    cover: '/events/event-5-2.png', 
+    images: ['/events/event-5-2.png', '/events/event-5-3.png', '/events/event-5-4.png', '/events/event-5-5.jpeg', '/events/event-5-6.jpeg'] 
+  },
+  { 
+    id: 3, 
+    category: 'Talks', 
+    title: 'Quantum Computing', 
+    date: 'Aug 2024', 
+    cover: '/events/event-4-2.jpg', 
+    images: ['/events/event-4-2.jpg', '/events/event-4-3.jpg', '/events/event-4-4.jpeg', '/events/event-4-5.jpeg', '/events/event-4-6.jpeg', '/events/event-4-7.png'] 
+  },
+  { 
+    id: 2, 
+    category: 'Talks', 
+    title: 'Research Paper Writing Logic', 
+    date: 'Sep 2023', 
+    cover: '/events/event-1-2.jpg', 
+    images: ['/events/event-1-2.jpg', '/events/event-1-3.jpeg', '/events/event-1-4.jpeg', '/events/event-1-5.jpeg', '/events/event-1-6.png'] 
+  },
+  { 
+    id: 1, 
+    category: 'Inauguration', 
+    title: 'Grand Inauguration Ceremony', 
+    date: 'Aug 2023',
+    cover: '/events/inaug-1.jpg',
+    images: [
+        '/events/inaug-1.jpg', 
+        '/events/inaug-2.jpeg',
+        '/events/inaug-3.jpeg',
+        '/events/inaug-4.jpeg',
+        '/events/inaug-5.jpeg',
+        '/events/inaug-6.jpeg',
+        '/events/inaug-7.jpeg',
+        '/events/inaug-8.jpeg',
+        '/events/inaug-9.jpeg'
+    ]
+  },
 ];
 
-const tags = ['all', 'talks', 'workshops', 'conferences', 'competitions'];
+const categories = ['All', 'Inauguration', 'Talks', 'Workshops', 'Competitions'];
 
 export default function GalleryPage() {
-  const [filter, setFilter] = useState('all');
-  const [viewPhoto, setViewPhoto] = useState(null); // photo object or null
+  const [selectedEvent, setSelectedEvent] = useState<GalleryItem | null>(null);
+  const [activeTab, setActiveTab] = useState('All');
+  const [mounted, setMounted] = useState(false);
 
-  const filteredPhotos = filter === 'all' ? photos : photos.filter(p => p.tag === filter);
+  // --- TAB SCROLL STATE ---
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  // 1. Sort items by Date (Newest First) automatically
+  const sortedItems = [...galleryItems].sort((a, b) => {
+    return new Date(b.date).getTime() - new Date(a.date).getTime();
+  });
+
+  // 2. Filter based on the active tab
+  const filteredImages = activeTab === 'All' 
+    ? sortedItems 
+    : sortedItems.filter(item => item.category === activeTab);
+
+  useEffect(() => {
+    setMounted(true);
+    // Lock body scroll when modal is open
+    if (selectedEvent) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [selectedEvent]);
+
+  // --- SCROLL LOGIC ---
+  const checkScrollButtons = () => {
+    if (tabsRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = tabsRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
+    }
+  };
+
+  useEffect(() => {
+    checkScrollButtons();
+    window.addEventListener('resize', checkScrollButtons);
+    return () => window.removeEventListener('resize', checkScrollButtons);
+  }, []);
+
+  const scrollTabs = (direction: 'left' | 'right') => {
+    if (tabsRef.current) {
+      const scrollAmount = 200;
+      tabsRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth',
+      });
+    }
+  };
 
   return (
-    <>
-      <main
-        style={{
-          padding: '2rem',
-          maxWidth: '1100px',
-          margin: '0 auto',
-          color: '#204a87',
-          fontFamily: "'Inter', system-ui, sans-serif",
-          position: 'relative',
-          zIndex: 1,
-        }}
+    <section style={{ padding: '2rem 1rem', maxWidth: '1200px', margin: '0 auto', color: 'white', minHeight: '100vh' }}>
+      
+      <style>{`
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .gallery-grid {
+           display: grid;
+           grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+           gap: 2.5rem;
+           padding-bottom: 1rem;
+        }
+      `}</style>
+
+      {/* HEADER */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        style={{ textAlign: 'center', marginBottom: '2rem', paddingTop: '0.1rem' }}
       >
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
+        <h1
           style={{
-            fontSize: 'clamp(2rem, 5vw, 3rem)',
+            fontSize: 'clamp(2.5rem, 5vw, 3.5rem)',
+            fontWeight: '800',
             marginBottom: '1rem',
-            color: '#24A647',
-            fontWeight: '700',
-            textAlign: 'center',
+            letterSpacing: '-0.025em',
+            color: '#78BE20',
           }}
         >
-          IEEE SPS SSN GALLERY
-        </motion.h1>
+          <span style={{ color: '#ffffff' }}>THE</span> GALLERY
+        </h1>
 
-        <p
-          style={{
-            fontSize: '1.1rem',
-            marginBottom: '2.5rem',
-            textAlign: 'center',
-            maxWidth: '700px',
-            marginLeft: 'auto',
-            marginRight: 'auto',
-            color: 'white',
-            fontWeight: 500,
-          }}
-        >
-          Browse through moments captured at our various talks, workshops, conferences, and
-          competitions. Use the filters below to explore photos by event type.
+        <p style={{ fontSize: '1.1rem', fontWeight: '500', color: 'inherit', maxWidth: '600px', margin: '0 auto', lineHeight: 1.6 }}>
+          Capturing the moments that define our community. Explore photos from our talks, workshops, and competitions.
         </p>
+      </motion.div>
 
-        {/* Filter Buttons with Icon */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '1rem',
-            flexWrap: 'wrap',
-            marginBottom: '2rem',
-          }}
-        >
-          {tags.map(tagName => (
-            <button
-              key={tagName}
-              onClick={() => setFilter(tagName)}
+      {/* --- CENTERED TABS --- */}
+      <div style={{ position: 'relative', marginBottom: '2rem', maxWidth: '800px', margin: '0 auto 3rem auto', display: 'flex', justifyContent: 'center' }}>
+        
+        {/* Left Arrow */}
+        <AnimatePresence>
+          {canScrollLeft && (
+            <motion.button
+              initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
+              onClick={() => scrollTabs('left')}
               style={{
-                padding: '0.5rem 1.2rem',
-                borderRadius: '25px',
-                border: filter === tagName ? '2px solid #24A647' : '2px solid transparent',
-                background: filter === tagName ? '#24A647' : '#dbebff',
-                color: filter === tagName ? 'white' : '#24A647',
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                minWidth: '110px',
-                textTransform: 'capitalize',
-                boxShadow: filter === tagName ? '0 4px 15px rgba(36,166,71,0.4)' : 'none',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.3rem',
+                position: 'absolute', left: -20, top: '50%', transform: 'translateY(-50%)', zIndex: 10,
+                background: '#0F5156', border: '1px solid rgba(120, 190, 32, 0.5)', color: '#78BE20',
+                borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
               }}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                fill={filter === tagName ? 'white' : '#24A647'}
-                viewBox="0 0 24 24"
+              <ChevronLeft size={20} />
+            </motion.button>
+          )}
+        </AnimatePresence>
+
+        {/* Scrollable Container */}
+        <div 
+          ref={tabsRef}
+          onScroll={checkScrollButtons}
+          className="no-scrollbar"
+          style={{ 
+            overflowX: 'auto', 
+            whiteSpace: 'nowrap', 
+            padding: '0.5rem',
+            display: 'flex',
+            maskImage: 'linear-gradient(to right, transparent, black 10px, black calc(100% - 10px), transparent)'
+          }}
+        >
+          <div style={{ display: 'inline-flex', gap: '0.75rem' }}>
+            {categories.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                style={{
+                  position: 'relative',
+                  padding: '0.6rem 1.4rem',
+                  borderRadius: '2rem',
+                  border: activeTab === tab ? 'none' : '1px solid rgba(255,255,255,0.1)',
+                  background: activeTab === tab ? '#78BE20' : 'rgba(255,255,255,0.05)',
+                  color: activeTab === tab ? '#0F5156' : '#ffffff',
+                  fontWeight: '700',
+                  fontSize: '0.9rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  whiteSpace: 'nowrap'
+                }}
               >
-                <path d="M3 5h18v2H3V5zm3 6h12v2H6v-2zm3 6h6v2H9v-2z" />
-              </svg>
-              {tagName === 'all' ? 'All Photos' : tagName}
-            </button>
-          ))}
+                {tab}
+                {activeTab === tab && (
+                  <motion.div
+                    layoutId="activeTab"
+                    style={{ position: 'absolute', inset: 0, borderRadius: '2rem', background: 'transparent', zIndex: -1 }}
+                  />
+                )}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Gallery Grid with Cards */}
-        <motion.div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-            gap: '1.3rem',
-            justifyItems: 'center',
-          }}
-          layout
-        >
-          <AnimatePresence>
-            {filteredPhotos.map(({ src, alt, tag, date }) => (
-              <motion.div
-                key={src}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4 }}
-                style={{
-                  width: '100%',
-                  maxWidth: '220px',
-                  background: 'white',
-                  borderRadius: '15px',
-                  boxShadow: '0 4px 15px rgba(36,166,71,0.2)',
-                  overflow: 'hidden',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  position: 'relative',
-                  userSelect: 'none',
-                }}
-                title={`${alt} • ${tag.charAt(0).toUpperCase() + tag.slice(1)}`}
-                onClick={() => setViewPhoto({ src, alt, tag })}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-              >
-                <img
-                  src={src}
-                  alt={alt}
-                  style={{ width: '100%', height: '140px', objectFit: 'cover' }}
-                />
-
-                {/* Date below image */}
-                <div
-                  style={{
-                    padding: '0.3rem 0',
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                    color: '#24A647',
-                    textTransform: 'none',
-                    width: '100%',
-                    textAlign: 'center',
-                    borderTop: '1px solid #d1f0d8',
-                  }}
-                >
-                  {date || 'Unknown Date'}
-                </div>
-
-                <div
-                  style={{
-                    padding: '0.6rem 1rem',
-                    fontWeight: 600,
-                    fontSize: '0.9rem',
-                    color: '#24A647',
-                    textTransform: 'capitalize',
-                    borderTop: '1px solid #d1f0d8',
-                    width: '100%',
-                    textAlign: 'center',
-                  }}
-                >
-                  {tag}
-                </div>
-
-                {/* Hover Overlay */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  whileHover={{ opacity: 1 }}
-                  transition={{ duration: 0.3 }}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: 'rgba(36, 166, 71, 0.6)',
-                    color: 'white',
-                    fontWeight: '700',
-                    fontSize: '1.1rem',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    borderRadius: '15px',
-                    pointerEvents: 'none',
-                    userSelect: 'none',
-                  }}
-                >
-                  VIEW
-                </motion.div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
-      </main>
-
-      {/* Modal for viewing image */}
-      <AnimatePresence>
-        {viewPhoto && (
-          <motion.div
-            key="modal"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100vw',
-              height: '100vh',
-              backgroundColor: 'rgba(0,0,0,0.7)',
-              backdropFilter: 'blur(8px)',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              zIndex: 9999,
-              padding: '1.5rem',
-            }}
-            onClick={() => setViewPhoto(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+        {/* Right Arrow */}
+        <AnimatePresence>
+          {canScrollRight && (
+            <motion.button
+              initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}
+              onClick={() => scrollTabs('right')}
               style={{
-                maxWidth: '90vw',
-                maxHeight: '90vh',
-                background: 'white',
-                borderRadius: '20px',
-                boxShadow: '0 15px 40px rgba(36,166,71,0.6)',
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden',
-                cursor: 'auto',
+                position: 'absolute', right: -20, top: '50%', transform: 'translateY(-50%)', zIndex: 10,
+                background: '#0F5156', border: '1px solid rgba(120, 190, 32, 0.5)', color: '#78BE20',
+                borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
               }}
-              onClick={e => e.stopPropagation()}
             >
-              <img
-                src={viewPhoto.src}
-                alt={viewPhoto.alt}
+              <ChevronRight size={20} />
+            </motion.button>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* GALLERY GRID */}
+      <motion.div 
+        layout
+        className="gallery-grid"
+      >
+        <AnimatePresence mode="popLayout">
+          {filteredImages.map((item) => (
+            <GalleryCard 
+              key={item.id}
+              item={item} 
+              onClick={() => setSelectedEvent(item)} 
+            />
+          ))}
+        </AnimatePresence>
+      </motion.div>
+
+      {/* CAROUSEL MODAL */}
+      {mounted && createPortal(
+        <AnimatePresence>
+          {selectedEvent && (
+            <CarouselModal 
+              event={selectedEvent} 
+              onClose={() => setSelectedEvent(null)} 
+            />
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+    </section>
+  );
+}
+
+// --- SUB COMPONENTS ---
+
+function GalleryCard({ item, onClick }: { item: GalleryItem, onClick: () => void }) {
+  const imageCount = item.images ? item.images.length : 1;
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      whileHover={{ y: -8 }}
+      whileTap={{ scale: 0.98 }}
+      onClick={onClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{ position: 'relative', cursor: 'pointer' }}
+    >
+        {/* STACK EFFECT (Background Cards) */}
+        <div style={{
+            position: 'absolute', inset: 0, 
+            background: 'rgba(255,255,255,0.1)', 
+            borderRadius: '1.2rem',
+            transform: isHovered ? 'rotate(6deg) scale(0.95)' : 'rotate(3deg)',
+            transition: 'transform 0.4s ease',
+            zIndex: 0
+        }} />
+        <div style={{
+            position: 'absolute', inset: 0, 
+            background: 'rgba(120, 190, 32, 0.2)', 
+            borderRadius: '1.2rem',
+            transform: isHovered ? 'rotate(-6deg) scale(0.95)' : 'rotate(-3deg)',
+            transition: 'transform 0.4s ease',
+            zIndex: 0
+        }} />
+
+        {/* MAIN CARD */}
+        <div style={{
+            backgroundColor: '#0F5156',
+            borderRadius: '1.2rem',
+            overflow: 'hidden',
+            border: '1px solid rgba(255,255,255,0.1)',
+            boxShadow: '0 20px 40px -10px rgba(0,0,0,0.5)',
+            position: 'relative',
+            zIndex: 1,
+            aspectRatio: '4/5',
+            display: 'flex',
+            flexDirection: 'column'
+        }}>
+            {/* Image Area */}
+            <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>
+                <img
+                    src={item.cover}
+                    alt={item.title}
+                    loading="lazy"
+                    style={{ 
+                        width: '100%', 
+                        height: '100%', 
+                        objectFit: 'cover', 
+                        transition: 'transform 0.7s ease, filter 0.3s ease',
+                        transform: isHovered ? 'scale(1.15)' : 'scale(1.0)',
+                        filter: isHovered ? 'blur(3px) brightness(0.7)' : 'none' 
+                    }}
+                />
+                
+                {/* Photo Count Pill */}
+                <div style={{
+                    position: 'absolute', top: '1rem', right: '1rem',
+                    background: 'rgba(0,0,0,0.7)', borderRadius: '2rem', padding: '0.3rem 0.7rem',
+                    backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', gap: '5px',
+                    border: '1px solid rgba(255,255,255,0.2)'
+                }}>
+                    <Images size={12} color="#78BE20" />
+                    <span style={{ color: 'white', fontSize: '0.75rem', fontWeight: '700' }}>{imageCount}</span>
+                </div>
+
+                {/* Center "View" Icon */}
+                <div style={{
+                    position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                    opacity: isHovered ? 1 : 0, transition: 'opacity 0.3s ease',
+                    textAlign: 'center'
+                }}>
+                    <div style={{ background: '#78BE20', padding: '0.8rem', borderRadius: '50%', display: 'inline-flex', boxShadow: '0 0 20px rgba(120,190,32,0.6)' }}>
+                        <ZoomIn size={24} color="#05191a" />
+                    </div>
+                </div>
+            </div>
+
+            {/* Content Area */}
+            <div style={{ padding: '1.2rem', background: '#092C2E', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                <p style={{ color: '#78BE20', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', marginBottom: '0.3rem', letterSpacing: '0.05em' }}>
+                    {item.category}
+                </p>
+                <h3 style={{ color: 'white', fontSize: '1rem', fontWeight: '700', lineHeight: 1.4, margin: 0, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    {item.title}
+                </h3>
+                <div style={{ marginTop: '0.8rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>
+                    {item.date}
+                </div>
+            </div>
+        </div>
+    </motion.div>
+  );
+}
+
+function CarouselModal({ event, onClose }: { event: GalleryItem, onClose: () => void }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const images = event.images || [event.cover]; 
+
+  const paginate = (newDirection: number) => {
+    if (newDirection === 1) {
+        setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+    } else {
+        setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') paginate(1);
+      if (e.key === 'ArrowLeft') paginate(-1);
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentIndex]); 
+
+  // Touch Swipe Logic
+  const handleDragEnd = (e: any, { offset, velocity }: PanInfo) => {
+    const swipeConfidenceThreshold = 10000;
+    const swipePower = Math.abs(offset.x) * velocity.x;
+
+    if (swipePower < -swipeConfidenceThreshold) {
+      paginate(1);
+    } else if (swipePower > swipeConfidenceThreshold) {
+      paginate(-1);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      style={{
+        position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+        background: 'rgba(5, 25, 26, 0.95)', 
+        backdropFilter: 'blur(8px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        zIndex: 11000,
+        padding: '1rem'
+      }}
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+        style={{
+          backgroundColor: '#092C2E',
+          borderRadius: '1.5rem',
+          overflow: 'hidden',
+          boxShadow: '0 25px 50px rgba(0,0,0,0.6)',
+          maxWidth: '1100px',
+          width: '100%',
+          maxHeight: '90vh',
+          display: 'flex',
+          flexDirection: 'column',
+          position: 'relative',
+          border: '1px solid rgba(120, 190, 32, 0.2)'
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          style={{
+            position: 'absolute', top: 20, right: 20,
+            background: 'rgba(0,0,0,0.6)', 
+            borderRadius: '50%',
+            width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', color: 'white', zIndex: 20, backdropFilter: 'blur(4px)',
+            transition: 'background 0.2s', 
+            border: '1px solid rgba(255,255,255,0.1)'
+          }}>
+          <X size={24} />
+        </button>
+
+        {/* Image Area - with Swipe handlers */}
+        <div style={{ flex: 1, overflow: 'hidden', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', minHeight: '300px' }}>
+            
+            {/* Left Nav Button (Desktop) */}
+            {images.length > 1 && (
+                <button
+                onClick={(e) => { e.stopPropagation(); paginate(-1); }}
+                className="nav-btn"
                 style={{
-                  maxWidth: '100%',
-                  maxHeight: '80vh',
-                  objectFit: 'contain',
-                  borderTopLeftRadius: '20px',
-                  borderTopRightRadius: '20px',
-                }}
-              />
-              <div
+                    position: 'absolute', left: 20, top: '50%', transform: 'translateY(-50%)',
+                    background: 'rgba(0,0,0,0.5)', border: 'none', borderRadius: '50%',
+                    width: '50px', height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', color: '#78BE20', zIndex: 10, backdropFilter: 'blur(4px)',
+                }}>
+                <ChevronLeft size={32} />
+                </button>
+            )}
+
+            {/* Draggable Image for Mobile Swipe */}
+            <AnimatePresence initial={false} mode="wait">
+                <motion.img 
+                    key={currentIndex}
+                    src={images[currentIndex]} 
+                    alt={`Slide ${currentIndex + 1}`}
+                    
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={1}
+                    onDragEnd={handleDragEnd}
+                    
+                    style={{ width: '100%', height: '100%', maxHeight: '70vh', objectFit: 'contain', cursor: 'grab' }} 
+                />
+            </AnimatePresence>
+
+            {/* Right Nav Button (Desktop) */}
+            {images.length > 1 && (
+                <button
+                onClick={(e) => { e.stopPropagation(); paginate(1); }}
+                className="nav-btn"
                 style={{
-                  padding: '1rem 1.5rem',
-                  backgroundColor: '#24A647',
-                  color: 'white',
-                  fontWeight: '700',
-                  fontSize: '1.1rem',
-                  textTransform: 'capitalize',
-                  textAlign: 'center',
-                  userSelect: 'none',
-                }}
-              >
-                {viewPhoto.tag}
-              </div>
-              <button
-                onClick={() => setViewPhoto(null)}
-                aria-label="Close Image"
-                style={{
-                  position: 'absolute',
-                  top: '1rem',
-                  right: '1rem',
-                  background: 'rgba(255,255,255,0.8)',
-                  border: 'none',
-                  borderRadius: '50%',
-                  width: '30px',
-                  height: '30px',
-                  fontWeight: '700',
-                  fontSize: '1.2rem',
-                  cursor: 'pointer',
-                  userSelect: 'none',
-                  lineHeight: 0,
-                }}
-              >
-                ×
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+                    position: 'absolute', right: 20, top: '50%', transform: 'translateY(-50%)',
+                    background: 'rgba(0,0,0,0.5)', border: 'none', borderRadius: '50%',
+                    width: '50px', height: '50px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', color: '#78BE20', zIndex: 10, backdropFilter: 'blur(4px)',
+                }}>
+                <ChevronRight size={32} />
+                </button>
+            )}
+
+            {/* Dots Indicator */}
+            {images.length > 1 && (
+                <div style={{ position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px', zIndex: 10, background: 'rgba(0,0,0,0.3)', padding: '0.5rem 1rem', borderRadius: '1rem' }}>
+                    {images.map((_: string, idx: number) => (
+                        <div 
+                            key={idx}
+                            style={{ 
+                                width: idx === currentIndex ? '24px' : '8px', 
+                                height: '8px', 
+                                borderRadius: '4px', 
+                                background: idx === currentIndex ? '#78BE20' : 'rgba(255,255,255,0.4)',
+                                transition: 'all 0.3s ease'
+                            }} 
+                        />
+                    ))}
+                </div>
+            )}
+        </div>
+
+        {/* Footer Info */}
+        <div style={{ padding: '1.5rem 2rem', background: '#092C2E', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+                <div>
+                    <span style={{ color: '#78BE20', fontWeight: '700', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        {event.category} • {event.date}
+                    </span>
+                    <h2 style={{ margin: '0.2rem 0 0 0', fontSize: '1.25rem', fontWeight: '700', color: 'white' }}>
+                        {event.title}
+                    </h2>
+                </div>
+                
+                <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
+                    {currentIndex + 1} / {images.length}
+                </div>
+            </div>
+        </div>
+      </motion.div>
+      
+      <style>{`
+        @media (max-width: 768px) {
+            .nav-btn { display: none !important; }
+        }
+      `}</style>
+    </motion.div>
   );
 }

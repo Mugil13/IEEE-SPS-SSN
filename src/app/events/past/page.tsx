@@ -1,502 +1,686 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Clock, MapPin, User, Users, Calendar } from 'lucide-react';
+import { X, Clock, MapPin, Calendar, ArrowUpRight, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 
+// --- DATA (Reordered: Most Recent First | Rewritten: Professional & Concise) ---
 const eventsData = [
   {
-    id: 1,
-    type: 'Workshop',
-    starred: true,
-    title: 'Advanced Deep Learning for Signal Processing',
-    description: 'Explore the latest techniques in deep learning applied to signal processing problems including audio, image, and biomedical signals.',
-    fullDescription: 'This comprehensive workshop will dive deep into advanced deep learning methodologies specifically designed for signal processing applications. Participants will learn about convolutional neural networks for audio processing, recurrent networks for time-series analysis, and transformer architectures for biomedical signal interpretation. The workshop includes hands-on coding sessions using Python and TensorFlow, with real-world datasets from audio, image, and biomedical domains. Industry experts will share case studies and best practices for deploying these models in production environments.',
-    date: 'Monday, January 15, 2024',
-    time: '2:00 PM - 5:00 PM',
-    venue: 'Seminar Hall A, Block 3',
-    capacity: '45/60',
-    speaker: 'Dr. Ananya Singh, IIT Madras',
-    tags: ['Deep Learning', 'Neural Networks', '+1']
+    id: 17,
+    category: 'Competitions',
+    title: 'Circuit-O-Poly',
+    image: '/events/event-16-1.jpg',
+    description: 'A strategic fusion of Monopoly and circuit design. Teams rolled dice to collect components, build functional circuits, and debug challenges in a race against time.',
+    fullDescription: 'Circuit-O-Poly gamified the fundamentals of electrical engineering by blending strategy with technical application. Unlike traditional Monopoly, players acquired resistors, capacitors, and microchips instead of property. The objective was to construct specific circuits while navigating "chance" cards that introduced real-world debugging scenarios. This format tested both theoretical knowledge and on-the-spot troubleshooting skills in a high-energy, collaborative environment.',
+    date: 'JAN 09, 2026',
+    time: '9:00 AM - 3:00 PM',
+    venue: 'PG Lab, BME'
   },
   {
-    id: 2,
-    type: 'Competition',
-    starred: true,
-    title: 'IEEE Signal Processing Cup 2024',
-    description: 'Annual student competition focusing on real-world signal processing challenges. Teams compete to develop innovative solutions.',
-    fullDescription: 'The IEEE Signal Processing Cup 2024 is a prestigious international competition that challenges students to apply their theoretical knowledge to solve real-world signal processing problems. This year\'s theme focuses on environmental monitoring using sensor networks. Teams will work with multi-modal sensor data including acoustic, visual, and environmental sensors to develop intelligent monitoring systems. The competition spans several months with preliminary rounds, mentoring sessions, and a final presentation. Winners receive cash prizes, IEEE certificates, and opportunities for publication in IEEE journals.',
-    date: 'Saturday, January 20, 2024',
-    time: '9:00 AM - 6:00 PM',
-    venue: 'Computer Lab 1 & 2',
-    capacity: '35/40',
-    speaker: 'IEEE SPS Team',
-    tags: ['Competition', 'Team Project', '+1']
-  },
-  {
-    id: 3,
-    type: 'Hands-on Session',
-    starred: false,
-    title: 'Introduction to MATLAB for Signal Processing',
-    description: 'Beginner-friendly workshop covering MATLAB basics and signal processing toolbox for first and second-year students.',
-    fullDescription: 'This introductory session is designed for students new to MATLAB and signal processing. The workshop covers MATLAB fundamentals including variable manipulation, plotting, and basic programming constructs. Students will learn to use the Signal Processing Toolbox for filtering, spectral analysis, and signal generation. Practical exercises include designing FIR and IIR filters, performing FFT analysis, and creating signal processing applications with GUI interfaces. All necessary software will be provided, and students will receive comprehensive tutorial materials.',
-    date: 'Thursday, January 25, 2024',
+    id: 16,
+    category: 'Talks',
+    title: 'Mapping Neuromuscular Pathways',
+    image: '/events/event-15-1.png',
+    description: 'An expert session on non-invasive multimodal techniques for biomedical analysis, featuring insights on advanced signal processing in neuromuscular research.',
+    fullDescription: 'Organized by the IEEE Photonics Society SSN SB, this session focused on cutting-edge non-invasive methods to map neuromuscular functions. Alumna Supraja Vaidhyanathan presented recent breakthroughs in multimodal signal acquisition, discussing how integrating different data sources leads to more accurate diagnostics. The talk bridged the gap between academic theory and clinical application, offering students a clear view of current trends in biomedical engineering research.',
+    date: 'JAN 07, 2026',
     time: '10:00 AM - 1:00 PM',
-    venue: 'Lab Complex B',
-    capacity: '22/40',
-    speaker: 'Prof. Ramesh Kumar, ECE Department',
-    tags: ['MATLAB', 'Beginner', '+1']
+    venue: 'Central Seminar Hall',
+    speaker: 'Supraja Vaidhyanathan'
   },
   {
-    id: 4,
-    type: 'Guest Lecture',
-    starred: false,
-    title: 'Industry Talk: 5G Signal Processing',
-    description: 'Insights into 5G technology, beamforming, MIMO systems, and career opportunities in telecommunications industry.',
-    fullDescription: 'Join us for an exclusive industry talk by a senior engineer from Qualcomm, covering the revolutionary aspects of 5G signal processing. The presentation will explore massive MIMO systems, beamforming algorithms, and the role of machine learning in 5G networks. Topics include signal processing challenges in millimeter-wave communications, network slicing, and edge computing applications. The speaker will also discuss career opportunities in the telecommunications industry, required skills, and the future roadmap of 6G technologies.',
-    date: 'Friday, February 2, 2024',
-    time: '4:00 PM - 5:30 PM',
-    venue: 'Main Auditorium',
-    capacity: '155/200',
-    speaker: 'Ms. Priya Reddy, Senior Engineer at Qualcomm',
-    tags: ['5G', 'Industry', '+1']
+    id: 15,
+    category: 'Workshops',
+    title: 'Optimization Techniques with MathWorks',
+    image: '/events/event-14-1.png',
+    description: 'A comprehensive two-day training on MATLAB optimization tools, bridging theoretical math with practical engineering problem-solving.',
+    fullDescription: 'Collaborating with the BME Department, this workshop delivered intensive hands-on training using MathWorks suites. Senior Application Engineer Afsal S. guided participants through linear and non-linear optimization problems, demonstrating how to leverage MATLAB for complex data modeling. The curriculum was designed for immediate application, helping researchers and students reduce computation time and improve algorithm efficiency in their respective projects.',
+    date: 'SEP 10 - SEP 11, 2025',
+    time: '9:00 AM - 3:00 PM',
+    venue: 'MSDM Lab, BME',
+    speaker: 'Mr. Afsal S.'
   },
   {
-    id: 5,
-    type: 'Presentation',
-    starred: false,
-    title: 'Research Paper Presentation Session',
-    description: 'Students present their ongoing research projects and receive feedback from faculty and peers.',
-    fullDescription: 'This session provides a platform for students to present their ongoing research work in signal processing and related fields. Each presenter gets 15 minutes to present their work followed by a 5-minute Q&A session. Faculty members and industry experts will provide valuable feedback and suggestions for improvement. Topics may include but are not limited to biomedical signal processing, communications, image processing, and machine learning applications. This is an excellent opportunity for students to refine their presentation skills and receive constructive feedback before submitting to conferences.',
-    date: 'Thursday, February 8, 2024',
-    time: '2:00 PM - 4:00 PM',
-    venue: 'Conference Room 1',
-    capacity: '25/50',
-    speaker: 'Student Researchers',
-    tags: ['Research', 'Presentation', '+1']
+    id: 14,
+    category: 'Workshops',
+    title: 'Student Outreach Program',
+    image: '/events/event-13-1.jpeg',
+    description: 'An interactive STEM initiative for Mahindra World School students, designed to spark curiosity through live demonstrations and basic electronics experiments.',
+    fullDescription: 'The SSN IIC and IEEE SPS team hosted students from Mahindra World School for a day of exploration. The program moved beyond textbooks, allowing students to handle basic electronic components and witness live signal processing demos. The goal was to demystify engineering concepts early on, encouraging these young minds to ask questions and view technology as a tool for creative problem-solving.',
+    date: 'AUG 27, 2025',
+    venue: 'SSN Campus'
+  },
+  {
+    id: 13,
+    category: 'Talks',
+    title: '"From Pixels to Insights": Computer Vision',
+    image: '/events/event-12-1.png',
+    description: 'The inaugural keynote for the IEEE SPS SSN Chapter, exploring the evolution of computer vision and its ability to extract meaning from digital imagery.',
+    fullDescription: 'Marking the official launch of the IEEE Signal Processing Society Student Branch, Dr. Sainarayanan Gopalakrishnan delivered a keynote on the journey from raw pixel data to actionable intelligence. He covered the progression of image recognition algorithms and their modern industrial applications. The event established the chapter’s mission to serve as a hub for research and professional networking in the signal processing domain.',
+    date: 'AUG 13, 2025',
+    time: '10:00 AM - 1:00 PM',
+    venue: 'Central Seminar Hall',
+    speaker: 'Dr. Sainarayanan Gopalakrishnan'
+  },
+  {
+    id: 12,
+    category: 'Talks',
+    title: 'Intelligent Spectrum Utilization in 5G/B5G',
+    image: '/events/event-11-1.png',
+    description: 'A deep dive into spectrum management challenges and signal processing solutions for next-generation wireless networks.',
+    fullDescription: 'As part of the IEEE SPS Day Series, S. Chris Prema from IIST Thiruvananthapuram addressed the critical issue of spectrum scarcity. The lecture examined intelligent allocation techniques required for 5G and Beyond-5G (B5G) networks. Participants gained insight into cognitive radio, dynamic spectrum access, and the signal processing algorithms that enable faster, more reliable global communication infrastructure.',
+    date: 'JUN 04, 2025',
+    time: '10:00 AM - 1:00 PM',
+    venue: 'Central Seminar Hall (Online)',
+    speaker: 'S. Chris Prema'
+  },
+  {
+    id: 11,
+    category: 'Talks',
+    title: 'Brain Computer Interface (BCI)',
+    image: '/events/event-10-1.png',
+    description: 'An exploration of BCI fundamentals and their transformative potential in healthcare, rehabilitation, and human-computer interaction.',
+    fullDescription: 'Dr. Chandra Prakash from SVNIT Surat led this session on the convergence of neuroscience and engineering. The talk detailed how BCI systems acquire brain signals to control external devices, offering hope for patients with motor disabilities. Discussions included signal acquisition challenges, feature extraction methods, and the ethical considerations surrounding direct brain-machine communication.',
+    date: 'JUN 02, 2025',
+    time: '10:00 AM - 1:00 PM',
+    venue: 'Central Seminar Hall (Online)',
+    speaker: 'Dr. Chandra Prakash'
+  },
+  {
+    id: 10,
+    category: 'Talks',
+    title: 'Alumni Talk Series: Ask Us Anything',
+    image: '/events/event-9-1.png',
+    description: 'A mentorship session with SSN alumni from top global universities, focusing on scholarship strategies, applications, and career planning.',
+    fullDescription: 'This interactive panel featured alumni currently at McGill, University of Alabama, and University of Houston. Moving beyond generic advice, the speakers broke down the specifics of drafting compelling Statements of Purpose (SOPs), securing funding, and adapting to academic life abroad. It provided a roadmap for current students aiming for higher education in competitive international environments.',
+    date: 'FEB 22, 2025',
+    time: '9:00 AM - 12:00 PM',
+    venue: 'MSDM Lab, BME',
+    speaker: 'Gurucharan M, Chetana K, Supraja V'
+  },
+  {
+    id: 9,
+    category: 'Competitions',
+    title: 'Circuitry Tycoon',
+    image: '/events/event-8-1.png',
+    description: 'A board game simulation where tech entrepreneurship meets circuit design. Players managed resources to build electronic empires.',
+    fullDescription: 'In this tech-business simulation, participants acted as CEOs of electronics companies. The game required balancing technical decisions—like component selection and circuit efficiency—with economic strategy. It highlighted the often-overlooked connection between engineering viability and market feasibility, forcing teams to think like product developers rather than just students.',
+    date: 'FEB 04, 2025',
+    time: '1:00 PM - 3:00 PM',
+    venue: 'Central Seminar Hall'
+  },
+  {
+    id: 8,
+    category: 'Competitions',
+    title: 'Dots and Dashes',
+    image: '/events/event-7-1.png',
+    description: 'A fast-paced decoding challenge testing proficiency in Semaphore and Morse code through competitive team-based rounds.',
+    fullDescription: 'Celebrating fundamental communication methods, this event pitted teams against each other in "Semaphore Showdown" and "Morse Code Mayhem." Speed and accuracy were paramount as participants translated visual and auditory signals under strict time limits. The event served as a fun, high-pressure reminder of the coding schemes that formed the bedrock of modern telecommunications.',
+    date: 'OCT 28, 2024',
+    time: '11:30 AM - 1:00 PM',
+    venue: 'Mini Auditorium'
+  },
+  {
+    id: 7,
+    category: 'Workshops',
+    title: 'Medical Device Design & Development',
+    image: '/events/event-6-1.png',
+    description: 'A two-day industrial workshop with Autodesk, teaching the end-to-end workflow of visualizing and prototyping medical devices.',
+    fullDescription: 'Focusing on the transition from concept to CAD, this workshop utilized Autodesk’s professional suite to design medical products. Participants learned to model complex geometries required for ergonomic medical devices and simulate their mechanical properties. The sessions emphasized industry standards for documentation and design iteration, essential skills for anyone entering the biomedical manufacturing sector.',
+    date: 'OCT 07 - OCT 08, 2024',
+    time: '8:30 AM - 3:30 PM',
+    venue: 'MSDM Lab, BME'
   },
   {
     id: 6,
-    type: 'Masterclass',
-    starred: true,
-    title: 'Digital Image Processing Masterclass',
-    description: 'Advanced techniques in digital image processing including filtering, enhancement, and computer vision applications.',
-    fullDescription: 'This comprehensive masterclass covers advanced digital image processing techniques used in modern computer vision applications. Participants will learn about advanced filtering techniques, morphological operations, feature extraction, and object recognition algorithms. The session includes hands-on implementation of image enhancement algorithms, edge detection methods, and introduction to deep learning for computer vision. Industry applications in medical imaging, autonomous vehicles, and surveillance systems will be discussed. Participants will work with popular libraries like OpenCV and scikit-image.',
-    date: 'Thursday, February 15, 2024',
-    time: '1:00 PM - 6:00 PM',
-    venue: 'Advanced Computing Lab',
-    capacity: '31/35',
-    speaker: 'Dr. Suresh Babu, Anna University',
-    tags: ['Image Processing', 'Computer Vision', '+1']
+    category: 'Talks',
+    title: 'Signal Processing for Healthcare',
+    image: '/events/event-5-1.png',
+    description: 'A technical lecture by Dr. K. V. S. Hari (IISc Bengaluru) on the impact of advanced signal processing in modern diagnostic tools.',
+    fullDescription: 'Dr. Hari, a leading voice in the field, discussed how signal processing algorithms are enhancing the resolution and reliability of healthcare systems. From radar-based vital sign monitoring to noise reduction in medical imaging, the talk illustrated the mathematical backbone of medical technology. It was a deep dive into how abstract equations translate into life-saving devices.',
+    date: 'AUG 30, 2024',
+    time: '2:00 PM - 3:00 PM',
+    venue: 'Justice Pratap Singh Auditorium',
+    speaker: 'Dr. Hari K V S'
+  },
+  {
+    id: 5,
+    category: 'Talks',
+    title: 'Quantum Computing & Applications',
+    image: '/events/event-4-1.png',
+    description: 'An introductory session on the paradigm shift of Quantum Computing and its potential to solve previously intractable problems.',
+    fullDescription: 'Karthiganesh Durai, CEO of KwantumG Research, demystified the principles of superposition and entanglement. The session moved quickly from theory to potential applications, specifically how quantum algorithms could revolutionize cryptography and material science. It provided a glimpse into the future of computation, encouraging students to prepare for the post-silicon era.',
+    date: 'AUG 05, 2024',
+    time: '10:00 AM - 1:00 PM',
+    venue: 'Central Seminar Hall',
+    speaker: 'Mr. Karthiganesh D'
+  },
+  {
+    id: 4,
+    category: 'Talks',
+    title: 'Deep Oscillatory Neural Networks',
+    image: '/events/event-3-1.png',
+    description: 'A specialized talk on neuromorphic computing architectures and their advantages in pattern recognition and signal processing tasks.',
+    fullDescription: 'Prof. V. Srinivasa Chakravarthy from IIT Madras presented his research on Deep Oscillatory Neural Networks (DONNs). Unlike standard ANNs, these networks mimic the oscillatory behavior of biological neurons. The session covered the mathematical foundations and the efficiency gains of using oscillatory dynamics for complex temporal processing tasks.',
+    date: 'MAY 24, 2024',
+    time: '10:00 AM - 12:00 PM',
+    venue: 'Central Seminar Hall',
+    speaker: 'Dr. Srinivasa Chakravarthy V'
+  },
+  {
+    id: 3,
+    category: 'Workshops',
+    title: 'AI in Medical System Design',
+    image: '/events/event-18-1.jpg',
+    description: 'A multi-day seasonal school bridging AI methodologies with biomedical signal analysis for next-gen diagnostic systems.',
+    fullDescription: 'This IEEE SPS Seasonal School offered a rigorous curriculum on applying Machine Learning and Deep Learning to biomedical datasets. Experts from academia and the healthcare industry demonstrated how to build AI models that interpret ECG, EEG, and other physiological signals. The program focused on the practical challenges of data noise, model interpretability, and clinical validation.',
+    date: 'FEB 26 - MAR 01, 2024',
+    time: '9:00 AM - 3:00 PM',
+    venue: 'Central Seminar Hall'
+  },
+  {
+    id: 2,
+    category: 'Competitions',
+    title: 'Signalysis',
+    image: '/events/event-2-1.png',
+    description: 'An idea-pitching contest challenging students to solve real-world problems using analytical signal processing concepts.',
+    fullDescription: 'Signalysis moved assessment beyond written exams. Teams identified existing problems in industry or society and proposed solutions rooted in signal analysis. The judging criteria focused heavily on feasibility and the clarity of the technical approach, pushing participants to articulate complex engineering ideas to a general audience effectively.',
+    date: 'OCT 26, 2023',
+    time: '11:00 AM - 12:00 PM',
+    venue: 'Central Seminar Hall'
+  },
+  {
+    id: 1,
+    category: 'Workshops',
+    title: 'Research Paper Writing for High Impact Journals',
+    image: '/events/event-1-1.jpg',
+    description: 'A structured guide to academic writing, focusing on logic flow, methodology presentation, and targeting top-tier publications.',
+    fullDescription: 'Led by Dr. Ken Sugiyama, this course deconstructed the anatomy of a successful research paper. It wasn’t just about grammar; the focus was on "logical flow"—how to construct an argument that leads the reviewer inevitably to the conclusion. Participants analyzed accepted papers to understand how to frame research questions and present data for maximum impact in the scientific community.',
+    date: 'SEP 14 - SEP 15, 2023',
+    time: '9:00 AM - 3:00 PM',
+    venue: 'Central Seminar Hall',
+    speaker: 'Dr. Ken Sugiyama'
   }
 ];
 
-export default function UpcomingEventsPage() {
-  const [selectedEvent, setSelectedEvent] = useState(null);
+const categories = ['All', 'Talks', 'Workshops', 'Competitions'];
 
-  const getTypeColor = (type) => {
-    switch (type) {
-      case 'Workshop': return '#3B82F6';
-      case 'Competition': return '#EF4444';
-      case 'Hands-on Session': return '#10B981';
-      case 'Guest Lecture': return '#8B5CF6';
-      case 'Presentation': return '#F59E0B';
-      case 'Masterclass': return '#06B6D4';
-      default: return '#6B7280';
+export default function PastEventsPage() {
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState('All');
+  const [mounted, setMounted] = useState(false);
+
+  // --- TAB SCROLL STATE ---
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const filteredEvents = activeTab === 'All' 
+    ? eventsData 
+    : eventsData.filter(item => item.category === activeTab);
+
+  useEffect(() => {
+    setMounted(true);
+    if (selectedEvent) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = 'unset';
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [selectedEvent]);
+
+  // --- SCROLL LOGIC ---
+  const checkScrollButtons = () => {
+    if (tabsRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = tabsRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
+    }
+  };
+
+  useEffect(() => {
+    checkScrollButtons();
+    window.addEventListener('resize', checkScrollButtons);
+    return () => window.removeEventListener('resize', checkScrollButtons);
+  }, []);
+
+  const scrollTabs = (direction: 'left' | 'right') => {
+    if (tabsRef.current) {
+      const scrollAmount = 200;
+      tabsRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth',
+      });
     }
   };
 
   return (
-    <div style={{ 
-      padding: '2rem', 
-      maxWidth: '1400px', 
-      margin: '0 auto',
-      minHeight: '100vh',
-      backgroundColor: 'transparent'
-    }}>
+    <section style={{ padding: '2rem 1rem', maxWidth: '1400px', margin: '0 auto', color: 'white', minHeight: '100vh' }}>
+      
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(120, 190, 32, 0.5); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #78BE20; }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .event-card-wrapper {
+            width: 350px;
+            flex-grow: 0;
+            flex-shrink: 0;
+        }
+
+        /* Modal Responsive Layout */
+        .modal-content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Image | Content */
+            height: 100%;
+        }
+
+        @media (max-width: 900px) {
+            .modal-content-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: 300px 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .event-card-wrapper {
+                width: 100%;
+            }
+        }
+      `}</style>
+
+      {/* HEADER */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7 }}
-        style={{ textAlign: 'center', marginBottom: '3rem' }}
+        transition={{ duration: 0.8 }}
+        style={{ textAlign: 'center', marginBottom: '2rem' }}
       >
-        <h1 style={{ 
-          fontSize: '3rem', 
-          fontWeight: 'bold',
-          color: '#10B981',
-          marginBottom: '1rem'
-        }}>
-          All Upcoming Events
+        <h1 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: '800', marginBottom: '1rem', color: '#78BE20', letterSpacing: '-0.025em' }}>
+          <span style={{ color: 'white' }}>PAST </span> EVENTS
         </h1>
-        <p style={{
-          fontSize: '1.1rem',
-          color: '#FFFFFF',
-          maxWidth: '600px',
-          margin: '0 auto',
-          lineHeight: '1.6'
-        }}>
-          Below are the upcoming events organized by IEEE SPS SSN Chapter. Stay tuned for exciting workshops, competitions, and learning opportunities!
+        <p style={{ fontSize: '1.2rem', fontWeight: '400', color: 'inherit', maxWidth: '600px', margin: '0 auto', lineHeight: 1.6 }}>
+          An archive of our workshops, competitions, and talks. <br />Explore what we have accomplished together.
         </p>
       </motion.div>
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-        gap: '1.5rem',
-        marginTop: '2rem'
-      }}>
-        {eventsData.map((event) => (
-          <motion.div
-            key={event.id}
-            whileHover={{ y: -8 }}
-            transition={{ duration: 0.3 }}
-            style={{
-              backgroundColor: 'white',
-              borderRadius: '12px',
-              padding: '1.5rem',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-              border: '1px solid #e5e7eb',
-              position: 'relative',
-              cursor: 'pointer'
-            }}
-          >
-            {/* Header with type badge and star */}
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center',
-              marginBottom: '1rem'
-            }}>
-              <span style={{
-                backgroundColor: getTypeColor(event.type),
-                color: 'white',
-                padding: '0.25rem 0.75rem',
-                borderRadius: '20px',
-                fontSize: '0.75rem',
-                fontWeight: '600'
-              }}>
-                {event.type}
-              </span>
-              {event.starred && (
-                <div style={{ color: '#3B82F6', fontSize: '1.25rem' }}>★</div>
-              )}
-            </div>
+      {/* --- FILTER TABS --- */}
+      <div style={{ position: 'relative', marginBottom: '3rem', maxWidth: '800px', margin: '0 auto 3rem auto', display: 'flex', justifyContent: 'center' }}>
+        
+        <AnimatePresence>
+          {canScrollLeft && (
+            <motion.button
+              initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }}
+              onClick={() => scrollTabs('left')}
+              style={{
+                position: 'absolute', left: -20, top: '50%', transform: 'translateY(-50%)', zIndex: 10,
+                background: '#0F5156', border: '1px solid rgba(120, 190, 32, 0.5)', color: '#78BE20',
+                borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+              }}
+            >
+              <ChevronLeft size={20} />
+            </motion.button>
+          )}
+        </AnimatePresence>
 
-            {/* Title */}
-            <h3 style={{
-              fontSize: '1.1rem',
-              fontWeight: '600',
-              color: '#1f2937',
-              marginBottom: '0.75rem',
-              lineHeight: '1.4'
-            }}>
-              {event.title}
-            </h3>
-
-            {/* Description */}
-            <p style={{
-              color: '#6b7280',
-              fontSize: '0.9rem',
-              lineHeight: '1.5',
-              marginBottom: '1rem'
-            }}>
-              {event.description}
-            </p>
-
-            {/* Date and Time */}
-            <div style={{ marginBottom: '0.75rem' }}>
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                marginBottom: '0.5rem',
-                color: '#374151',
-                fontSize: '0.85rem'
-              }}>
-                <Calendar size={14} style={{ marginRight: '0.5rem' }} />
-                {event.date}
-              </div>
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                marginBottom: '0.5rem',
-                color: '#374151',
-                fontSize: '0.85rem'
-              }}>
-                <Clock size={14} style={{ marginRight: '0.5rem' }} />
-                {event.time}
-              </div>
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                marginBottom: '0.5rem',
-                color: '#374151',
-                fontSize: '0.85rem'
-              }}>
-                <MapPin size={14} style={{ marginRight: '0.5rem' }} />
-                {event.venue}
-              </div>
-            </div>
-
-            {/* Capacity */}
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              marginBottom: '0.75rem',
-              color: '#374151',
-              fontSize: '0.85rem'
-            }}>
-              <Users size={14} style={{ marginRight: '0.5rem' }} />
-              {event.capacity}
-            </div>
-
-            {/* Speaker */}
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              marginBottom: '1rem',
-              color: '#374151',
-              fontSize: '0.85rem'
-            }}>
-              <User size={14} style={{ marginRight: '0.5rem' }} />
-              {event.speaker}
-            </div>
-
-            {/* Tags */}
-            <div style={{ 
-              display: 'flex', 
-              gap: '0.5rem', 
-              marginBottom: '1.5rem',
-              flexWrap: 'wrap'
-            }}>
-              {event.tags.map((tag, index) => (
-                <span
-                  key={index}
-                  style={{
-                    backgroundColor: '#f3f4f6',
-                    color: '#374151',
-                    padding: '0.25rem 0.5rem',
-                    borderRadius: '12px',
-                    fontSize: '0.75rem'
-                  }}
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-
-            {/* Buttons */}
-            <div style={{ 
-              display: 'flex', 
-              gap: '0.75rem',
-              marginTop: 'auto'
-            }}>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+        <div 
+          ref={tabsRef}
+          onScroll={checkScrollButtons}
+          className="no-scrollbar"
+          style={{ 
+            overflowX: 'auto', 
+            whiteSpace: 'nowrap', 
+            padding: '0.5rem',
+            display: 'flex',
+            maskImage: 'linear-gradient(to right, transparent, black 10px, black calc(100% - 10px), transparent)'
+          }}
+        >
+          <div style={{ display: 'inline-flex', gap: '0.75rem' }}>
+            {categories.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
                 style={{
-                  backgroundColor: '#10B981',
-                  color: 'white',
-                  border: 'none',
-                  padding: '0.75rem 1.25rem',
-                  borderRadius: '8px',
+                  position: 'relative',
+                  padding: '0.6rem 1.4rem',
+                  borderRadius: '2rem',
+                  border: activeTab === tab ? 'none' : '1px solid rgba(255,255,255,0.1)',
+                  background: activeTab === tab ? '#78BE20' : 'rgba(255,255,255,0.05)',
+                  color: activeTab === tab ? '#0F5156' : '#ffffff',
+                  fontWeight: '700',
                   fontSize: '0.9rem',
-                  fontWeight: '600',
                   cursor: 'pointer',
-                  flex: 1
+                  transition: 'all 0.3s ease',
+                  whiteSpace: 'nowrap'
                 }}
               >
-                Register ↗
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setSelectedEvent(event)}
-                style={{
-                  backgroundColor: 'transparent',
-                  color: '#3B82F6',
-                  border: '1px solid #3B82F6',
-                  padding: '0.75rem 1.25rem',
-                  borderRadius: '8px',
-                  fontSize: '0.9rem',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  flex: 1
-                }}
-              >
-                View More
-              </motion.button>
-            </div>
-          </motion.div>
-        ))}
+                {tab}
+                {activeTab === tab && (
+                  <motion.div
+                    layoutId="activeTab"
+                    style={{ position: 'absolute', inset: 0, borderRadius: '2rem', background: 'transparent', zIndex: -1 }}
+                  />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <AnimatePresence>
+          {canScrollRight && (
+            <motion.button
+              initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}
+              onClick={() => scrollTabs('right')}
+              style={{
+                position: 'absolute', right: -20, top: '50%', transform: 'translateY(-50%)', zIndex: 10,
+                background: '#0F5156', border: '1px solid rgba(120, 190, 32, 0.5)', color: '#78BE20',
+                borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+              }}
+            >
+              <ChevronRight size={20} />
+            </motion.button>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* Modal for detailed view */}
-      <AnimatePresence>
-        {selectedEvent && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              zIndex: 1000,
-              padding: '2rem'
-            }}
-            onClick={() => setSelectedEvent(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              style={{
-                backgroundColor: 'white',
-                borderRadius: '16px',
-                padding: '2rem',
-                maxWidth: '600px',
-                maxHeight: '70vh',
-                overflowY: 'auto',
-                position: 'relative'
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={() => setSelectedEvent(null)}
-                style={{
-                  position: 'absolute',
-                  top: '1rem',
-                  right: '1rem',
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: '#6b7280',
-                  padding: '0.5rem'
-                }}
-              >
-                <X size={24} />
-              </button>
+      {/* EVENTS GRID */}
+      <motion.div 
+        layout
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          gap: '2.5rem',
+          width: '100%'
+        }}
+      >
+        <AnimatePresence mode="popLayout">
+          {filteredEvents.map((event) => (
+            <div key={event.id} className="event-card-wrapper">
+              <EventCard 
+                event={event} 
+                onClick={() => setSelectedEvent(event)} 
+              />
+            </div>
+          ))}
+        </AnimatePresence>
+      </motion.div>
 
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center',
-                marginBottom: '1rem'
-              }}>
-                <span style={{
-                  backgroundColor: getTypeColor(selectedEvent.type),
-                  color: 'white',
-                  padding: '0.5rem 1rem',
-                  borderRadius: '20px',
-                  fontSize: '0.875rem',
-                  fontWeight: '600'
-                }}>
-                  {selectedEvent.type}
-                </span>
-                {selectedEvent.starred && (
-                  <div style={{ color: '#3B82F6', fontSize: '1.5rem' }}>★</div>
-                )}
-              </div>
+      {/* MODAL */}
+      {mounted && createPortal(
+        <AnimatePresence>
+          {selectedEvent && (
+            <EventModal 
+              event={selectedEvent} 
+              onClose={() => setSelectedEvent(null)} 
+            />
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+    </section>
+  );
+}
 
-              <h2 style={{
-                fontSize: '1.5rem',
-                fontWeight: '700',
-                color: '#1f2937',
-                marginBottom: '1rem'
-              }}>
-                {selectedEvent.title}
-              </h2>
+// --- SUB COMPONENTS ---
 
-              <div style={{ marginBottom: '1.5rem', color: '#4b5563' }}>
-                <div style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center' }}>
-                  <Calendar size={16} style={{ marginRight: '0.75rem' }} />
-                  <strong>{selectedEvent.date}</strong>
-                </div>
-                <div style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center' }}>
-                  <Clock size={16} style={{ marginRight: '0.75rem' }} />
-                  {selectedEvent.time}
-                </div>
-                <div style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center' }}>
-                  <MapPin size={16} style={{ marginRight: '0.75rem' }} />
-                  {selectedEvent.venue}
-                </div>
-                <div style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center' }}>
-                  <Users size={16} style={{ marginRight: '0.75rem' }} />
-                  Capacity: {selectedEvent.capacity}
-                </div>
-                <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center' }}>
-                  <User size={16} style={{ marginRight: '0.75rem' }} />
-                  {selectedEvent.speaker}
-                </div>
-              </div>
+function EventCard({ event, onClick }: { event: any, onClick: () => void }) {
+  const [isHovered, setIsHovered] = useState(false);
 
-              <div style={{ marginBottom: '1.5rem' }}>
-                <h3 style={{ 
-                  fontSize: '1.1rem', 
-                  fontWeight: '600', 
-                  marginBottom: '0.75rem',
-                  color: '#1f2937'
-                }}>
-                  Description
-                </h3>
-                <p style={{
-                  color: '#4b5563',
-                  lineHeight: '1.6',
-                  fontSize: '0.95rem'
-                }}>
-                  {selectedEvent.fullDescription}
-                </p>
-              </div>
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -8, transition: { duration: 0.3, ease: 'easeOut' } }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{
+        backgroundColor: '#05191a',
+        borderRadius: '1.5rem',
+        border: '1px solid rgba(120, 190, 32, 0.2)',
+        boxShadow: isHovered ? '0 20px 40px rgba(0,0,0,0.4)' : '0 10px 30px rgba(0,0,0,0.2)',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        position: 'relative',
+        transition: 'box-shadow 0.3s ease'
+      }}
+    >
+      {/* Image Section - CLICKABLE */}
+      <div 
+        onClick={onClick}
+        style={{ 
+          height: '220px', width: '100%', position: 'relative', overflow: 'hidden', cursor: 'pointer' 
+        }}
+      >
+          <div style={{ 
+            width: '100%', height: '100%', 
+            transition: 'filter 0.3s ease, transform 0.5s ease',
+            filter: isHovered ? 'blur(2px) brightness(0.7)' : 'none',
+            transform: isHovered ? 'scale(1.05)' : 'scale(1)'
+          }}>
+            <img 
+                src={event.image} 
+                alt={event.title}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          </div>
+          
+          {/* Overlay "View Details" */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            opacity: isHovered ? 1 : 0,
+            transition: 'opacity 0.3s ease',
+          }}>
+            <div style={{ 
+                background: '#78BE20', color: '#092C2E', 
+                padding: '0.6rem 1.2rem', borderRadius: '2rem', 
+                fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.5rem',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
+            }}>
+                <Eye size={18} />
+                <span>View Details</span>
+            </div>
+          </div>
+      </div>
 
-              <div style={{ 
-                display: 'flex', 
-                gap: '0.75rem', 
-                marginBottom: '1rem',
-                flexWrap: 'wrap'
-              }}>
-                {selectedEvent.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    style={{
-                      backgroundColor: '#f3f4f6',
-                      color: '#374151',
-                      padding: '0.5rem 0.75rem',
-                      borderRadius: '12px',
-                      fontSize: '0.85rem'
+      {/* Content Section - NOT CLICKABLE */}
+      <div style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', flexGrow: 1, cursor: 'default' }}>
+        
+        {/* Meta Row: Date & Tag */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#78BE20', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <Calendar size={14} />
+                <span>{event.date.split('-')[0].trim()}</span> 
+             </div>
+
+             <span style={{ 
+                backgroundColor: 'rgba(120, 190, 32, 0.1)', 
+                color: '#78BE20', padding: '0.3rem 0.6rem', borderRadius: '0.4rem', 
+                fontSize: '0.65rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em'
+            }}>
+                {event.category}
+            </span>
+        </div>
+
+        {/* Title */}
+        <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: 'white', marginBottom: '1rem', lineHeight: 1.2, textTransform: 'uppercase' }}>
+            {event.title}
+        </h3>
+
+        {/* Description Excerpt */}
+        <p style={{ fontSize: '0.9rem', color: '#94a3b8', lineHeight: 1.5, marginBottom: '1.5rem', flexGrow: 1 }}>
+            {event.description}
+        </p>
+
+        {/* Footer - View More - CLICKABLE */}
+        <div 
+          onClick={onClick}
+          style={{ 
+            borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1rem',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            color: '#78BE20', fontWeight: '700', fontSize: '0.9rem', cursor: 'pointer'
+        }}>
+            <span>VIEW MORE</span>
+            <ArrowUpRight size={18} />
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function EventModal({ event, onClose }: { event: any, onClose: () => void }) {
+  const contentClick = (e: React.MouseEvent) => e.stopPropagation();
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      style={{
+        position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+        background: 'rgba(0, 0, 0, 0.9)',
+        backdropFilter: 'blur(10px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        zIndex: 11000,
+        padding: '1rem'
+      }}
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        style={{
+          backgroundColor: '#092C2E',
+          borderRadius: '1.5rem',
+          width: '95vw',
+          maxWidth: '1200px', // Bigger width
+          height: '85vh',     // Bigger height
+          overflow: 'hidden',
+          position: 'relative',
+          border: '1px solid rgba(120, 190, 32, 0.3)',
+          boxShadow: '0 25px 50px rgba(0,0,0,0.6)',
+        }}
+        onClick={contentClick}
+      >
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          style={{
+            position: 'absolute', top: '1rem', right: '1rem', zIndex: 50,
+            background: 'rgba(0,0,0,0.5)', border: 'none', borderRadius: '50%',
+            width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', color: 'white', backdropFilter: 'blur(4px)'
+          }}>
+          <X size={20} />
+        </button>
+
+        {/* MODAL GRID LAYOUT */}
+        <div className="modal-content-grid">
+            
+            {/* LEFT SIDE: POSTER IMAGE (Scrollable if too long) */}
+            <div className="custom-scrollbar" style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#000', overflowY: 'auto' }}>
+                <img 
+                    src={event.image} 
+                    alt={event.title}
+                    style={{ 
+                        width: '100%', 
+                        minHeight: '100%', 
+                        objectFit: 'contain', // Ensures full poster is seen, or use 'cover' if you prefer filling space
+                        display: 'block'
                     }}
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
+                />
+            </div>
 
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                style={{
-                  backgroundColor: '#10B981',
-                  color: 'white',
-                  border: 'none',
-                  padding: '0.875rem 2rem',
-                  borderRadius: '8px',
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  width: '100%'
-                }}
-              >
-                Register for Event ↗
-              </motion.button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+            {/* RIGHT SIDE: SCROLLABLE CONTENT */}
+            <div className="custom-scrollbar" style={{ padding: '2.5rem', overflowY: 'auto' }}>
+                
+                {/* Header Section */}
+                <div style={{ marginBottom: '2rem' }}>
+                    <span style={{ 
+                        color: '#78BE20', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.8rem',
+                        display: 'inline-block', marginBottom: '0.5rem', background: 'rgba(120, 190, 32, 0.1)', padding: '0.3rem 0.8rem', borderRadius: '1rem'
+                    }}>
+                        {event.category}
+                    </span>
+
+                    <h2 style={{ fontSize: 'clamp(1.5rem, 3vw, 2.5rem)', fontWeight: '800', color: 'white', lineHeight: 1.1, marginTop: '0.5rem', textTransform: 'uppercase' }}>
+                        {event.title}
+                    </h2>
+                </div>
+
+                {/* Info Grid (Date, Time, Location) - Conditional Rendering */}
+                <div style={{ 
+                    display: 'flex', flexDirection: 'column', gap: '1.2rem',
+                    background: 'rgba(0,0,0,0.2)', padding: '1.5rem', borderRadius: '1rem', marginBottom: '2rem' 
+                }}>
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                        <div style={{ background: 'rgba(120, 190, 32, 0.1)', padding: '0.6rem', borderRadius: '50%' }}>
+                           <Calendar size={20} color="#78BE20" />
+                        </div>
+                        <div>
+                            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem', fontWeight: '700' }}>DATE</div>
+                            <div style={{ color: 'white', fontWeight: '600', fontSize: '1rem', textTransform: 'uppercase' }}>{event.date}</div>
+                        </div>
+                    </div>
+                    
+                    {event.time && (
+                        <>
+                            <div style={{ width: '100%', height: '1px', background: 'rgba(255,255,255,0.05)' }} />
+                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                <div style={{ background: 'rgba(120, 190, 32, 0.1)', padding: '0.6rem', borderRadius: '50%' }}>
+                                    <Clock size={20} color="#78BE20" />
+                                </div>
+                                <div>
+                                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem', fontWeight: '700' }}>TIME</div>
+                                    <div style={{ color: 'white', fontWeight: '600', fontSize: '1rem' }}>{event.time}</div>
+                                </div>
+                            </div>
+                        </>
+                    )}
+
+                    {event.venue && (
+                        <>
+                            <div style={{ width: '100%', height: '1px', background: 'rgba(255,255,255,0.05)' }} />
+                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                <div style={{ background: 'rgba(120, 190, 32, 0.1)', padding: '0.6rem', borderRadius: '50%' }}>
+                                    <MapPin size={20} color="#78BE20" />
+                                </div>
+                                <div>
+                                    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem', fontWeight: '700' }}>LOCATION</div>
+                                    <div style={{ color: 'white', fontWeight: '600', fontSize: '1rem' }}>{event.venue}</div>
+                                </div>
+                            </div>
+                        </>
+                    )}
+                </div>
+
+                {/* About the Event */}
+                <div style={{ marginBottom: '2rem' }}>
+                    <h3 style={{ color: 'white', fontSize: '1.1rem', fontWeight: '700', marginBottom: '0.75rem' }}>ABOUT THE EVENT</h3>
+                    <p style={{ color: '#cbd5e1', lineHeight: 1.7, fontSize: '1rem' }}>
+                        {event.fullDescription}
+                    </p>
+                </div>
+
+                {/* Speaker (Conditional) */}
+                {event.speaker && (
+                    <div style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                          <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem', fontWeight: '700', marginBottom: '0.25rem' }}>HOST / SPEAKER</div>
+                          <div style={{ color: '#78BE20', fontWeight: '700', fontSize: '1.1rem' }}>{event.speaker}</div>
+                    </div>
+                )}
+            </div>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
