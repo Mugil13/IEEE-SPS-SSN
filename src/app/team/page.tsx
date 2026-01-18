@@ -28,7 +28,7 @@ const teamsData: Record<string, any[]> = {
     { name: 'Pradeep K M', role: 'Vice-Chair', img: '/officebearers/pradeep.jpg', linkedin: 'http://www.linkedin.com/in/pradeepkmaran', instagram: 'https://www.instagram.com/pradeepkmaran' },
     { name: 'Bharathi K', role: 'Secretary', img: '/officebearers/bharathi.jpg', linkedin: 'https://www.linkedin.com/in/bharathi-kamaraj-0134b1305/', instagram: 'https://www.instagram.com/kamaraj_bharathi/' },
     { name: 'Monish Kumar S', role: 'Treasurer', img: '/officebearers/monish.png', linkedin: 'http://www.linkedin.com/in/monish-kumar-278531315', instagram: 'https://www.instagram.com/monish_kumar2004' },
-    { name: 'Leelasri B', role: 'Joint-Secretary', img: '/officebearers/leela-2.jpeg', linkedin: 'https://www.linkedin.com/in/leelasri', instagram: 'https://www.instagram.com/insiko_110110 ' },
+    { name: 'Leelasri B', role: 'Joint-Secretary', img: '/officebearers/leela.png', linkedin: 'https://www.linkedin.com/in/leelasri', instagram: 'https://www.instagram.com/insiko_110110 ' },
   ],
   "Core Committee": [
     { name: 'Sharadha G', role: 'Coordinator', img: '/core/sharadha.jpg', linkedin: 'https://www.linkedin.com/in/shar-gopal', instagram: 'https://www.instagram.com/shar_1512' },
